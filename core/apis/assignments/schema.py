@@ -36,3 +36,18 @@ class AssignmentSubmitSchema(Schema):
     def initiate_class(self, data_dict, many, partial):
         # pylint: disable=unused-argument,no-self-use
         return GeneralObject(**data_dict)
+
+class GradeAssignmentSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Assignment
+        unknown = EXCLUDE
+
+    id = auto_field(required=False, allow_none=True)
+    grade = auto_field(required=True)
+
+    @post_load
+    def initiate_class(self, data_dict, many, partial):
+        """
+        Will return an Object with the required key mapped with the values provided by the user
+        """
+        return GeneralObject(**data_dict)
