@@ -77,7 +77,7 @@ def test_grade_assignment_cross(client, h_teacher_2):
 
 def test_grade_assignment_bad_grade(client, h_teacher_1):
     """
-    failure case: API should not allow only grades available in enum
+    failure case: API should allow only grades available in enum
     """
     response = client.post(
         '/teacher/assignments/grade',
@@ -93,6 +93,23 @@ def test_grade_assignment_bad_grade(client, h_teacher_1):
 
     assert data['error'] == 'ValidationError'
 
+def test_empty_grade_assignment(client, h_teacher_1):
+    """
+    failure case: API should not allow empty grade
+    """
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers=h_teacher_1,
+        json={
+            "id": 1,
+            "grade": ""
+        }
+    )
+
+    assert response.status_code == 400
+    data = response.json
+
+    assert data['error'] == 'ValidationError'
 
 def test_grade_assignment_bad_assignment(client, h_teacher_1):
     """

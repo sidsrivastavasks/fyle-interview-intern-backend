@@ -95,27 +95,29 @@ class Assignment(db.Model):
         return cls.filter(cls.teacher_id == teacher_id).all()
 
     @classmethod
-    def check_and_update_assignment_grade(cls, assignment_new: 'Assignment'):
-        if assignment_new.id is not None:
-            
-            """
-            Fetching the assignment matching the provided assignment id
-            """
-            assignment = Assignment.get_by_id(assignment_new.id)
+    def grade_an_assignment(cls, assignment_to_grade: 'Assignment'):
+    
+        """
+        Fetching the assignment matching the provided assignment id
+        """
+        assignment = Assignment.get_by_id(assignment_to_grade.id)
 
-            """
-            Checking all satisfied conditions on received assignment
-            """
-            assertions.assert_found(assignment, 'No assignment with this id was found')
-            assertions.assert_valid(assignment.state != AssignmentStateEnum.DRAFT,'Assignment cannot be graded as its still in Draft state')
-            assertions.assert_valid(assignment.state != AssignmentStateEnum.GRADED, 'The Grade has already been given to the student')
-            assertions.assert_valid(assignment.teacher_id == assignment_new.teacher_id, f'Assignment {assignment.id} was submitted to teacher {assignment.teacher_id} and not teacher {assignment_new.teacher_id}')
+        """
+        Checking all satisfied conditions on received assignment
+        """
+        assertions.assert_found(assignment, 'No assignment with this id was found')
+        assertions.assert_valid(assignment.state != AssignmentStateEnum.DRAFT,'Assignment cannot be graded as its still in Draft state')
+        assertions.assert_valid(assignment.state != AssignmentStateEnum.GRADED, 'The Grade has already been given to the student')
+        assertions.assert_valid(assignment.teacher_id == assignment_to_grade.teacher_id, f'Assignment {assignment.id} was submitted to teacher {assignment.teacher_id} and not teacher {assignment_to_grade.teacher_id}')
+        assertions.assert_valid(assignment_to_grade.grade is not None, 'Grade cannot be empty')
+        assertions.assert_valid(assignment_to_grade.grade in GradeEnum.__members__, 'Grade should be one of A, B, C, D')
 
-            """
-            After all the check has passed, teacher can grade the assignment
-            """
-            assignment.state = AssignmentStateEnum.GRADED
-            assignment.grade = assignment_new.grade
-
+        """
+        Updating the assignment state and grade
+        """
+        assignment.state = AssignmentStateEnum.GRADED
+        assignment.grade = assignment_to_grade.grade
+        
+        db.session.commit()
         db.session.flush()
         return assignment
